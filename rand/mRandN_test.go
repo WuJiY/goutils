@@ -1,36 +1,34 @@
 package rand
 
 import (
-	"fmt"
 	"math/rand"
 	"testing"
 	"time"
+
+	"github.com/niubaoshu/goutils"
 )
 
 func TestMRandN(t *testing.T) {
 	for i := 0; i < 10; i++ {
-		rst := Rand(i, i)
-		fmt.Println(rst)
-		for j := 0; j < i; j++ {
-			if rst[j] > i {
-				t.Error(rst)
-			}
+		rst := Perm(i, nil)
+		if goutils.CheckRepeat(rst) {
+			t.Error(rst)
 		}
 	}
 }
 
-func BenchmarkMRandN(b *testing.B) {
-	r := NewMrandN()
+func BenchmarkMSelectN(b *testing.B) {
+	r := NewMrandNWithLen(100000)
 	for i := 0; i < b.N; i++ {
-		r.Rand(100000, i)
+		r.SelectN(i, nil)
 	}
 }
 
-func BenchmarkMRandNSlice(b *testing.B) {
-	r := NewMrandN()
-	rs := make([]int, 100000)
+func BenchmarkPerm(b *testing.B) {
+	buf := make([]int, 0, 100000)
+	r := NewMrandNWithLen(100000)
 	for i := 0; i < b.N; i++ {
-		r.RandSlice(100000, i, rs)
+		r.Perm(buf)
 	}
 }
 

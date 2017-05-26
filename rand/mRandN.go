@@ -1,59 +1,78 @@
+// 该程序实现在m个int中选取n个
 package rand
 
 import (
 	"math/rand"
+	"strconv"
 	"sync"
 	"time"
+
+	"github.com/niubaoshu/goutils"
 )
 
 type MrandN struct {
-	lock         sync.Mutex
-	bucket       []int
-	bucketLength int
-	rand         *rand.Rand
+	lock   sync.Mutex
+	bucket []int
+	bktLen int
+	rand   *rand.Rand
 }
 
-var globalRand = NewMrandN()
+const defaultLength = 1024
 
-func NewMrandNWithLength(max int) *MrandN {
-	foo := MrandN{bucketLength: max, bucket: make([]int, max), rand: rand.New(rand.NewSource(time.Now().UnixNano()))}
-	for i := 0; i < max; i++ {
-		foo.bucket[i] = i
+var defaultRand = NewMrandNWithLen(defaultLength)
+
+func NewMrandN(bkt []int) *MrandN {
+	return &MrandN{bktLen: len(bkt), bucket: bkt, rand: rand.New(rand.NewSource(time.Now().UnixNano()))}
+}
+
+func NewMrandNWithLen(l int) *MrandN {
+	bkt := make([]int, l)
+	for i := 0; i < l; i++ {
+		bkt[i] = i
 	}
-	return &foo
+	return &MrandN{bktLen: l, bucket: bkt, rand: rand.New(rand.NewSource(time.Now().UnixNano()))}
 }
 
-func NewMrandN() *MrandN {
-	return NewMrandNWithLength(1024)
-}
+func (mrn *MrandN) SelectN(n int, data []int) []int {
+	if mrn.bktLen < n {
+		panic("bucket length " + strconv.Itoa(mrn.bktLen) + " not enough " + strconv.Itoa(n))
+	}
 
-func (mrn *MrandN) RandSlice(m, n int, randSlice []int) []int {
+	bkt := mrn.bucket
+	bl := mrn.bktLen
+	r := mrn.rand
+	last := mrn.bktLen - 1
+
+	buf, l := goutils.EnlargeInt(data, n)
+	temp := buf[l:]
+
 	mrn.lock.Lock()
-	if m > mrn.bucketLength {
-		mrn.bucket = make([]int, m)
-	}
 	for i := 0; i < n; i++ {
-		idx := mrn.rand.Intn(m-i) + i
-		randSlice[i] = mrn.bucket[idx]
-		mrn.bucket[idx], mrn.bucket[i] = mrn.bucket[i], mrn.bucket[idx]
+		idx := r.Intn(bl - i)
+		temp[i] = bkt[idx]
+		bkt[idx], bkt[last-i] = bkt[last-i], bkt[idx]
 	}
-	mrn.reset(n)
 	mrn.lock.Unlock()
-	return randSlice
+	return buf[:l+n]
 }
 
-func RandSlice(m, n int, randSlice []int) []int { return globalRand.RandSlice(m, n, randSlice) }
-
-func (mrn *MrandN) Rand(m, n int) []int {
-	randSlice := make([]int, n)
-	mrn.RandSlice(m, n, randSlice)
-	return randSlice
-}
-func Rand(m, n int) []int { return globalRand.Rand(m, n) }
-
-func (mrn *MrandN) reset(n int) {
-	for i := 0; i < n; i++ {
-		idx := mrn.bucket[i]
-		mrn.bucket[idx], mrn.bucket[i] = idx, mrn.bucket[idx]
+func (mrn *MrandN) Perm(data []int) []int {
+	buf := data
+	if cap(data)-len(data) < mrn.bktLen {
+		buf = make([]int, len(data), mrn.bktLen+len(data))
+		copy(buf, data)
 	}
+	return mrn.SelectN(mrn.bktLen, buf)
+}
+
+func MSelectN(m, n int, data []int) []int {
+	var r = defaultRand
+	if m > defaultLength {
+		r = NewMrandNWithLen(m)
+	}
+	return r.SelectN(n, data)
+}
+
+func Perm(n int, data []int) []int {
+	return MSelectN(n, n, data)
 }
