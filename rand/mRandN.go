@@ -57,12 +57,7 @@ func (mrn *MrandN) SelectN(n int, data []int) []int {
 }
 
 func (mrn *MrandN) Perm(data []int) []int {
-	buf := data
-	if cap(data)-len(data) < mrn.bktLen {
-		buf = make([]int, len(data), mrn.bktLen+len(data))
-		copy(buf, data)
-	}
-	return mrn.SelectN(mrn.bktLen, buf)
+	return mrn.SelectN(mrn.bktLen, data)
 }
 
 func MSelectN(m, n int, data []int) []int {

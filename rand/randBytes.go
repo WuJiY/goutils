@@ -3,7 +3,6 @@ package rand
 import (
 	"math/rand"
 	"time"
-
 	"github.com/niubaoshu/goutils"
 )
 
@@ -41,7 +40,7 @@ const (
 
 var (
 	chars = [ALL + 1][]byte{
-		0:                   []byte(),
+		0:                   []byte{},
 		NUM:                 []byte(num),
 		LOWER:               []byte(lower),
 		NUM | LOWER:         []byte(num + lower),

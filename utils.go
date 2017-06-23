@@ -14,7 +14,7 @@ func CheckRepeat(a []int) bool {
 
 func EnlargeInt(data []int, l int) (buf []int, n int) {
 	if cap(data)-len(data) < l {
-		buf = make([]int, l+len(data), l+cap(data))
+		buf = make([]int, l+len(data))
 		n = copy(buf, data)
 	} else {
 		buf = data[:len(data)+l]
@@ -23,7 +23,7 @@ func EnlargeInt(data []int, l int) (buf []int, n int) {
 }
 func EnlargeByte(data []byte, l int) (buf []byte, n int) {
 	if cap(data)-len(data) < l {
-		buf = make([]byte, l+len(data), l+cap(data))
+		buf = make([]byte, l+len(data))
 		n = copy(buf, data)
 	} else {
 		buf = data[:len(data)+l]
