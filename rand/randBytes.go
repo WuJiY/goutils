@@ -3,28 +3,11 @@ package rand
 import (
 	"math/rand"
 	"time"
+
 	"github.com/niubaoshu/goutils"
 )
 
 var r = rand.New(rand.NewSource(time.Now().UnixNano()))
-
-func RandBytesA(l int, buff []byte) []byte {
-	if cap(buff) < l {
-		b := make([]byte, l-cap(buff))
-		buff = append(buff[:], b...)
-	} else {
-		buff = buff[:len(buff)+l]
-	}
-
-	for i := len(buff); i < l; i++ {
-		buff[i] = byte(r.Intn(1 << 8))
-	}
-	return buff
-}
-
-func RandBytes(l int) []byte {
-	return RandBytesA(l, nil)
-}
 
 const (
 	NUM = 1 << iota
@@ -39,27 +22,39 @@ const (
 )
 
 var (
-	chars = [ALL + 1][]byte{
-		0:                   []byte{},
-		NUM:                 []byte(num),
-		LOWER:               []byte(lower),
-		NUM | LOWER:         []byte(num + lower),
-		UPPER:               []byte(upper),
-		NUM | UPPER:         []byte(num + upper),
-		LOWER | UPPER:       []byte(lower + upper),
-		NUM | LOWER + UPPER: []byte(num + upper + lower),
+	chars = [...][]byte{
+		0:                   []byte{},                    // 0
+		NUM:                 []byte(num),                 // 001
+		LOWER:               []byte(lower),               // 010
+		UPPER:               []byte(upper),               // 100
+		LOWER | NUM:         []byte(num + lower),         // 011
+		UPPER | NUM:         []byte(num + upper),         // 101
+		LOWER | UPPER:       []byte(lower + upper),       // 110
+		NUM | LOWER | UPPER: []byte(num + upper + lower), // 111
 	}
-	lens = [ALL + 1]int{
+	lens = [...]int{
 		0:                   0,
 		NUM:                 len(num),
 		LOWER:               len(lower),
-		NUM | LOWER:         len(num + lower),
 		UPPER:               len(upper),
-		NUM | UPPER:         len(num + upper),
+		LOWER | NUM:         len(num + lower),
+		UPPER | NUM:         len(num + upper),
 		LOWER | UPPER:       len(lower + upper),
-		NUM | LOWER + UPPER: len(num + upper + lower),
+		NUM | LOWER | UPPER: len(num + upper + lower),
 	}
 )
+
+//
+func BytesToBuff(l int, buff []byte) []byte {
+	for i := 0; i < l; i++ {
+		buff[i] = byte(r.Intn(1 << 8))
+	}
+	return buff
+}
+
+func Bytes(l int) []byte {
+	return BytesToBuff(l, nil)
+}
 
 func RandStringAWithChars(l int, chars []byte, data []byte) []byte {
 	buf, n := goutils.EnlargeByte(data, l)
