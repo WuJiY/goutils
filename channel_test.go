@@ -1,11 +1,14 @@
-package goutils
+package goutils_test
 
 import (
 	"testing"
+	"time"
+
+	"github.com/niubaoshu/goutils"
 )
 
 func TestChannel(t *testing.T) {
-	c := NewChannel(1)
+	c := goutils.NewChannel(1, time.Second)
 	var a = 1
 	go c.Add(a)
 	select {
@@ -13,14 +16,14 @@ func TestChannel(t *testing.T) {
 		is := c.Get()
 		for i := 0; i < len(is); i++ {
 			if is[i].(int) != 1 {
-				t.Fatalf("error %s", is[i].(int))
+				t.Fatalf("error %v", is[i].(int))
 			}
 		}
 	}
 }
 
 func TestChannelA(t *testing.T) {
-	c := NewChannel(10)
+	c := goutils.NewChannel(10, time.Second)
 	loopNum := 10000000
 	exitch := make(chan struct{})
 	go func() {
