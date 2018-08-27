@@ -21,3 +21,7 @@ func GetInAndOut(rt reflect.Type) (in reflect.Type, out reflect.Type) {
 	out = reflect.StructOf(outArg)
 	return
 }
+
+func assignment(a, b interface{}) {
+
+}
