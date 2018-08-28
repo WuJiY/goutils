@@ -19,6 +19,7 @@ func NewWeek52(cap int) *Week52 {
 		mode:   length - 1,
 		length: length,
 	}
+
 }
 
 // round 到最近的2的倍数
